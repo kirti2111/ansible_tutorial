@@ -1,0 +1,17 @@
+---
+- name: installing java on Slave01
+  hosts: web-apps
+  become: true
+  tasks:
+  - name: installing java on Slave01
+    apt: 
+      name: openjdk-11-jdk
+      update_cache: yes  
+      state: latest
+
+  - name: Set JAVA_HOME
+    lineinfile:
+      dest: /etc/environment
+      state: present
+      regexp: '^JAVA_HOME'
+      line: 'JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64'
