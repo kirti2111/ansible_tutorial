@@ -1,0 +1,41 @@
+---
+
+ - name: line in file module
+   hosts: web-apps
+   become: true
+   tasks:
+     - name: line in file
+       lineinfile:
+         path: /home/ubu22sr2/Documents/test/test
+         regexp: ^test
+         line: test 56789
+       when: ansible_distribution == "Ubuntu"
+       register: pizza
+
+     - name: change in pizza
+       service:
+         name: https
+         state: restarted
+       when: pizza.changed
+
+ - hosts: all
+   become: true
+   tasks:
+
+   - name: add user
+     user:
+       name: kk
+       group: root
+               
+   - name: add ssh keys for kk
+     authorized_key:
+       user: kk
+       key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKzwa/krt937o6Giipgmsun7GeIRFdrEQGmJEJuUvGpM ansible"
+        
+   - name: add to sudoer file to kk
+     copy:
+       src: sudoer_kk
+       dest: /etc/sudoers.d/kk
+       owner: root
+       group: root
+       mode: 0440
