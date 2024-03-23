@@ -39,6 +39,15 @@
       state: latest
     when: ansible_distribution == "CentOS"
 
+  - name: copy default index.html
+    tags: apache,apache
+    copy:
+      src: default_index.html
+      dest: /var/www/html/index.html
+      mode: 0644
+      owner: root
+      group: root
+
 - hosts: db-servers
   become: true
   tasks:
@@ -59,5 +68,6 @@
       package:
         name: samba
         state: latest
+
    
   
