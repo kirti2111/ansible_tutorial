@@ -1,0 +1,63 @@
+---
+
+- name: install apache
+  hosts: all
+  become: true
+  pre_tasks:
+
+  - name: update cache
+    tags: always
+    apt:
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+
+  - name: update cache on cenOS
+    tags: always
+    dnf: 
+      update_cache: yes
+    when: ansible_distribution == "CentOS"
+
+- hosts: web-apps
+  become: true
+  tasks:
+
+  - name: install apche in server
+    tags: apache,apache2,ubuntu
+    apt:
+      name:
+        - apache2
+        - libapache2-mod-php
+      state: latest
+    when: ansible_distribution == "Ubuntu"
+  
+  - name: install apache on CenOS
+    tags: apache,php,centos
+    dnf: 
+      name: 
+        - httpd
+        - php
+      state: latest
+    when: ansible_distribution == "CentOS"
+
+- hosts: db-servers
+  become: true
+  tasks:
+    
+    - name: install maria db
+      tags: db,mariadb
+      apt:
+        name: mariadb-server
+        state: latest
+      when: ansible_distribution == "Ubuntu"
+
+- hosts: files-servers
+  become: true
+  tasks:
+
+    - name: install
+      tags: samba
+      package:
+        name: samba
+        state: latest
+   
+  

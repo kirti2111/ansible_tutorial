@@ -4,19 +4,12 @@
   become: true
   tasks:
 
-  - name: update repository
-    apt:
+  - name: install apcahe and php
+    package:
+      name:
+        - "{{ apache_package }}"
+        - "{{ php_package }}"
+      state: latest  
       update_cache: yes
-    when: ansible_distribution == "Ubuntu"
-
-  - name: install apcahe
-    apt:
-      name: apache2
-      state: latest
-
-  - name: instal php
-    apt: 
-      name: libapache2-mod-php
-      state: latest     
-
+    
 
