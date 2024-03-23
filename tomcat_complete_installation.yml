@@ -2,6 +2,8 @@
 - name: Install Apache Tomcat10 using ansible
   hosts: web-apps
   become: true
+  become_user: root
+  become_method: su
   tasks:
     - name: Update the System Packages
       apt:

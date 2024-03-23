@@ -7,15 +7,16 @@
   - name: update repository
     apt:
       update_cache: yes
+    when: ansible_distribution == "Ubuntu"
 
   - name: install apcahe
     apt:
       name: apache2
-      state: absent
+      state: latest
 
   - name: instal php
     apt: 
       name: libapache2-mod-php
-      state: absent    
+      state: latest     
 
 
