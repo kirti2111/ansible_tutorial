@@ -1,0 +1,5 @@
+- name: add ssh keys 
+  tags: always
+  authorized_key: 
+    user: emisha
+    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICeK+pv82NJPH4yS/kC80ID/Sj9mOp4tmYOV0D6f8grB New non root key"

@@ -1,0 +1,57 @@
+- name: install apche in server
+  tags: apache,apache2,ubuntu
+  apt:
+    name:
+      - apache2
+      - libapache2-mod-php
+    state: latest
+  when: ansible_distribution == "Ubuntu"
+  
+- name: install apache on CenOS
+  tags: apache,php,centos
+  dnf: 
+    name: 
+      - httpd
+      - php
+    state: latest
+  when: ansible_distribution == "CentOS"
+
+- name: service apache
+  tags: apache
+  service:
+    name: apache2
+    state: started
+    enabled: yes
+  when: ansible_distribution == "Ubuntu"
+
+- name: start httpd
+  tags: apache,centos,https
+  service: 
+    name: httpd
+    start: started
+  when: ansible_distribution == "CentOS"
+   
+- name: change the index.html
+  tags: apache
+  lineinfile:
+    path: /var/www/html/index.html
+    regexp: '^<p>Ansible is awsome</p>'
+    line:  '<p>Ansible is tooooo awsome</p>'
+  when: ansible_distribution == "Ubuntu"
+  register: diff
+
+- name: restart apache2
+  tags: apache
+  service: 
+    name: apache2
+    state: restarted
+  when: diff.changed
+
+- name: copy default index.html
+  tags: apache,apache
+  copy:
+    src: default_index.html
+    dest: /var/www/html/index.html
+    mode: 0644
+    owner: root
+    group: root
