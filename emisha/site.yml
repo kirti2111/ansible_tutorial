@@ -1,0 +1,27 @@
+---
+
+- hosts: all
+  become: true
+  pre_tasks:
+
+  - name: update cache
+    tags: always
+    apt:
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+
+- hosts: all
+  become: true   
+  roles:
+    - base
+
+- hosts: web-apps
+  become: true
+  roles: 
+    - web_servers
+
+- hosts: db-servers
+  become: true
+  roles: 
+    - db_servers
+

@@ -1,0 +1,38 @@
+---
+
+- name: install apache
+  hosts: all
+  become: true
+  pre_tasks:
+
+  - name: update cache
+    tags: always
+    apt:
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+
+- hosts: all
+  become: true   
+  tasks:
+
+  - name: create a user by name emisha
+    tags: always
+    user:
+      name: emisha
+      groups: root
+
+  - name: add ssh keys 
+    tags: always
+    authorized_key: 
+      user: emisha
+      key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICeK+pv82NJPH4yS/kC80ID/Sj9mOp4tmYOV0D6f8grB New non root key"
+
+  - name: add to the sudoer file
+    tags: always
+    copy:
+      src: sudoer_emisha
+      dest: /etc/sudoers.d/emisha
+      owner: root
+      group: root
+      mode: 0440
+
