@@ -1,0 +1,51 @@
+- name: Setup pgslave
+  hosts: pgslave
+  become: yes
+  tags: [pgslave]
+  vars:
+    replica_password: 'replica123'
+    host1_ip_address: "192.168.1.8" 
+  tasks:
+    - name: Stop PostgreSQL server
+      systemd:
+        name: postgresql
+        state: stopped
+
+    - name: Create data directory
+      file:
+        path: /var/lib/postgresql/16/data
+        mode: '0700'
+        owner: postgres
+        group: postgres
+        state: directory
+
+    - name: Move data backup
+      shell: mv /var/lib/postgresql/16/data /var/lib/postgresql/16/data-backup
+      args:
+        chdir: /var/lib/postgresql/16
+      ignore_errors: yes
+
+    - name: Backup initial data from master
+      shell: su - postgres -c "PGPASSWORD={{ replica_password }} pg_basebackup -w -h {{ host1_ip_address }} -U replica -D /var/lib/postgresql/16/data -P"
+
+    - name: copying the postgres.conf file
+      template:
+        src: /home/kirtivu/Documents/ansible/postgresql.j2
+        dest: /etc/postgresql/16/main/postgresql.conf
+        owner: postgres
+        group: postgres
+        mode: 0644
+
+    - name: Create recovery.conf
+      copy:
+        src: recovery.conf
+        dest: /var/lib/postgresql/16/data/recovery.conf
+        owner: postgres
+        group: postgres
+        state: present
+        create: yes
+
+    - name: Start PostgreSQL server
+      systemd:
+        name: postgresql
+        state: started

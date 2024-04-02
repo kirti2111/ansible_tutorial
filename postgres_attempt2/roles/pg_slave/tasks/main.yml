@@ -1,0 +1,46 @@
+- name: Stop PostgreSQL server
+  systemd:
+    name: postgresql
+    state: stopped
+
+- name: Move data backup
+  shell: mv data data-backup
+  args:
+    chdir: /var/lib/postgresql/16
+  ignore_errors: yes
+
+- name: Create data directory
+  file:
+    path: /var/lib/postgresql/16/data
+    mode: '0700'
+    owner: postgres
+    group: postgres
+    state: directory
+
+- name: Backup initial data from master
+  shell: su - postgres -c "PGPASSWORD='replica123' pg_basebackup -w -h {{ hostvars['host1'].ansible_host }} -U replica -D /var/lib/postgresql/16/data -P"
+      
+      
+      
+- name: copying the postgres.conf file
+  template:
+    src: postgresql.j2
+    dest: /etc/postgresql/16/main/postgresql.conf
+    owner: postgres
+    group: postgres
+    mode: 0644
+
+
+- name: Create recovery.conf
+  template:
+    src: recovery.conf
+    dest: /var/lib/postgresql/16/data/recovery.conf
+    owner: postgres
+    group: postgres
+    mode: 0600
+  
+
+- name: Start PostgreSQL server
+  systemd:
+    name: postgresql
+    state: started

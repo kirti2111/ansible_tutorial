@@ -1,0 +1,56 @@
+
+- name: Add pgdg repo to sources.list.d
+  lineinfile:
+    path: /etc/apt/sources.list.d/pgdg.list
+    line: "deb http://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release }}-pgdg main"
+    create: true
+
+- name: Download PostgreSQL key and add it to system keyring
+  apt_key:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    state: present
+
+- name: Install PostgreSQL and python3-pip and cache
+  apt:
+    name: 
+      - postgresql
+      - python3-pip
+    update_cache: yes
+    state: present
+
+- name: Install psycopg2
+  pip:
+    name: psycopg2-binary
+    state: present
+
+- name: Start PostgreSQL service
+  systemd:
+    name: postgresql
+    state: started
+    enabled: yes
+
+- name: Wait for PostgreSQL to be ready
+  wait_for:
+    path: /var/run/postgresql/.s.PGSQL.5432.lock
+    state: present
+  retries: 60
+  delay: 10
+
+        
+- name: Enable and start UFW
+  systemd:
+    name: ufw
+    state: started
+    enabled: yes
+
+- name: Allow PostgreSQL traffic through UFW
+  ufw:
+    rule: allow
+    port: 5432
+    comment: "PostgreSQL"
+
+- name: Reload UFW
+  command: ufw reload
+
+- name: List UFW rules
+  command: ufw status verbose

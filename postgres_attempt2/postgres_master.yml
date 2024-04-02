@@ -1,0 +1,42 @@
+- name: Setup pgmaster
+  hosts: all
+  become: yes
+  gather_facts: yes
+  tags: all
+  vars:
+    replica_password: ‘replica123’
+    
+  tasks:
+  - name: copying the postgres.conf file
+    template:
+      src: postgresql.j2
+      dest: /etc/postgresql/16/main/postgresql.conf
+      owner: postgres
+      group: postgres
+      mode: 0644
+     
+  - name: Create archive directory
+    file: 
+      path: /var/lib/postgresql/16/archive
+      mode: 0700
+      owner: postgres
+      group: postgres
+      state: directory
+ 
+  - name: Update pg_hba.conf 
+    template:
+      src: pg_hba.j2
+      dest: /etc/postgresql/16/main/pg_hba.conf
+      owner: postgres
+      group: postgres
+      mode: 0640
+ 
+  - name: Restart PostgreSQL server
+    systemd:
+      name: postgresql
+      enabled: yes
+      state: restarted
+ 
+  - name: Create replication user
+    shell: sudo -u postgres psql -c "CREATE USER replica REPLICATION LOGIN ENCRYPTED PASSWORD '{{ replica_password }}'"
+

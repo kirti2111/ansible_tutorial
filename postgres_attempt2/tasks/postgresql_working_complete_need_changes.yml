@@ -1,0 +1,61 @@
+---
+- name: Common pre-requisites
+  hosts: all
+  become: true
+  vars:
+    db_password: "postgres123"
+    postgres_version: "9.6"
+  tasks:
+    - name: Add pgdg repo to sources.list.d
+      lineinfile:
+        path: /etc/apt/sources.list.d/pgdg.list
+        line: "deb http://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release }}-pgdg main"
+        create: true
+
+    - name: Download PostgreSQL key and add it to system keyring
+      apt_key:
+        url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+        state: present
+
+    - name: Install PostgreSQL and python3-pip and cache
+      apt:
+        name: 
+          - postgresql
+          - python3-pip
+        update_cache: yes
+        state: present
+
+    - name: Install psycopg2
+      pip:
+        name: psycopg2-binary
+        state: present
+
+    - name: Start PostgreSQL service
+      systemd:
+        name: postgresql
+        state: started
+        enabled: yes
+
+    - name: Wait for PostgreSQL to start
+      wait_for:
+        host: 127.0.0.1
+        port: 5432
+        timeout: 600
+        
+    - name: Enable and start UFW
+      systemd:
+        name: ufw
+        state: started
+        enabled: yes
+
+    - name: Allow PostgreSQL traffic through UFW
+      ufw:
+        rule: allow
+        port: 5432
+        comment: "PostgreSQL"
+
+    - name: Reload UFW
+      command: ufw reload
+
+    - name: List UFW rules
+      command: ufw status verbose

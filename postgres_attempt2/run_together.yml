@@ -1,0 +1,19 @@
+---
+- hosts: db_hosts
+
+  tasks:
+
+  - name: Execute prequisites on all hosts
+    import_tasks: tasks/postgres_master.yml
+    when: inventory_hostname in groups['db_hosts']
+    become: true
+
+  - name: Configure master node
+    import_tasks: tasks/pg_conf_master.yml
+    when: inventory_hostname in groups['pgmaster']
+    become: true
+
+  - name: Configure slave nodes
+    import_tasks: tasks/postgres_slave_gpt.yml
+    when: inventory_hostname in groups['pgslave']
+    become: true
